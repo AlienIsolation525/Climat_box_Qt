@@ -9,6 +9,7 @@
 #include <QSplitter>
 #include <QApplication>
 #include <QDebug>
+#include <QSplitter>
 #include "header.h"
 
 /**
@@ -67,30 +68,51 @@ void MainWindow::setupUI() {
     connect(aboutAction, &QAction::triggered, this, &MainWindow::showAboutDialog);
     helpMenu->addAction(aboutAction);
 
-    ///< Столбец с кнопками общего управления условиями среды
+    /// Создание столбца с кнопками общего управления условиями среды
+    ///  Помещается в виджет для установки максимальный ширины
+    ///  "hack" из дискуссии на stack overflow
+    QWidget *controlsRestrictorWidget = new QWidget();///< Столбец с кнопками общего управления условиями среды
     QVBoxLayout *controlLayout = new QVBoxLayout();
+    controlsRestrictorWidget->setLayout(controlLayout);
+    controlsRestrictorWidget->setMaximumWidth(122);
 
     ///< Кнопка включения/выключения
     toggleSystemButton = new QPushButton("ON", this);
     connect(toggleSystemButton, &QPushButton::clicked, this, &MainWindow::toggleSystem);
     controlLayout->addWidget(toggleSystemButton);
 
-    ///< Вертикальный слайдер для изменения температуры
-    temperatureSlider = new QSlider(Qt::Vertical, this);
-    temperatureSlider->setRange(0, 120);
-    temperatureSlider->setMinimumHeight(200);
-    connect(temperatureSlider, &QSlider::valueChanged, this, &MainWindow::updateTemperature);
-    controlLayout->addWidget(new QLabel("Температура:"));
-    controlLayout->addWidget(temperatureSlider);
+    QSplitter *splitter1 = new QSplitter(); ///< Разделитель для уравновешивания
+    controlLayout->addWidget(splitter1);
 
-    ///< Выпадающий список для изменения шага слайдера
-    temperatureSliderCombo = new QComboBox(this);
-    temperatureSliderCombo->addItems({"10","15","30"});
-    connect(temperatureSliderCombo,
-            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this,
-            &MainWindow::changeSliderUnit);
-    controlLayout->addWidget(temperatureSliderCombo);
+    controlLayout->addWidget(new QLabel("Температура 1:"));
+    temperature1_SpinBox = new QSpinBox(this);
+    temperature1_SpinBox->setMinimum(-110);
+    temperature1_SpinBox->setMaximum(110);
+    temperature1_SpinBox->setSingleStep(3);
+    connect(temperature1_SpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, [this](int value){ updateTemperature(value, 1); });
+    controlLayout->addWidget(temperature1_SpinBox);
+
+    controlLayout->addWidget(new QLabel("Температура 2:"));
+    temperature2_SpinBox = new QSpinBox(this);
+    temperature2_SpinBox->setMinimum(-110);
+    temperature2_SpinBox->setMaximum(110);
+    temperature2_SpinBox->setSingleStep(3);
+    connect(temperature2_SpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, [this](int value){ updateTemperature(value, 2); });
+    controlLayout->addWidget(temperature2_SpinBox);
+
+    controlLayout->addWidget(new QLabel("Температура 3:"));
+    temperature3_SpinBox = new QSpinBox(this);
+    temperature3_SpinBox->setMinimum(-110);
+    temperature3_SpinBox->setMaximum(110);
+    temperature3_SpinBox->setSingleStep(3);
+    connect(temperature3_SpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, [this](int value){ updateTemperature(value, 3); });
+    controlLayout->addWidget(temperature3_SpinBox);
+
+     QSplitter *splitter = new QSplitter(); ///< Разделитель для уравновешивания
+    controlLayout->addWidget(splitter);
 
     ///< Выпадающий список для выбора единицы измерения температуры
     temperatureUnitCombo = new QComboBox(this);
@@ -127,9 +149,9 @@ void MainWindow::setupUI() {
     QPushButton *room1Button = new QPushButton("Комната 1", this);
     connect(room1Button, &QPushButton::clicked, this, [this]() {editRoom(1); });
 
-    room1TemperatureLabel = new QLabel("Температура: 10", this);
-    room1HumidityLabel = new QLabel("Влажность: 10%", this);
-    room1PressureLabel = new QLabel("Давление: 100000", this);
+    room1TemperatureLabel = new QLabel("Температура: 0", this);
+    room1HumidityLabel = new QLabel("Влажность: 0%", this);
+    room1PressureLabel = new QLabel("Давление: 0", this);
     room1AirflowDirectionLabel = new QLabel("Направление подачи воздуха", this);
     ///  Выставляем минимальную ширину QLabel для статичного отображения инфо-блоков
     room1TemperatureLabel->setMinimumWidth(222);
@@ -148,10 +170,10 @@ void MainWindow::setupUI() {
     QVBoxLayout *room2Layout = new QVBoxLayout();
     QPushButton *room2Button = new QPushButton("Комната 2", this);
     connect(room2Button, &QPushButton::clicked, this, [this]() { editRoom(2); });
-    room2TemperatureLabel = new QLabel("Температура: 20", this);
+    room2TemperatureLabel = new QLabel("Температура: 0", this);
     room2TemperatureLabel->setObjectName("roomLabel");
-    room2HumidityLabel = new QLabel("Влажность: 20%", this);
-    room2PressureLabel = new QLabel("Давление: 102000", this);
+    room2HumidityLabel = new QLabel("Влажность: 0%", this);
+    room2PressureLabel = new QLabel("Давление: 0", this);
     room2AirflowDirectionLabel = new QLabel("Направление подачи воздуха", this);
 
     room2TemperatureLabel->setMinimumWidth(222);
@@ -170,9 +192,9 @@ void MainWindow::setupUI() {
     QVBoxLayout *room3Layout = new QVBoxLayout();
     QPushButton *room3Button = new QPushButton("Комната 3", this);
     connect(room3Button, &QPushButton::clicked, this, [this]() { editRoom(3); });
-    room3TemperatureLabel = new QLabel("Температура: 30", this);
-    room3HumidityLabel = new QLabel("Влажность: 30%", this);
-    room3PressureLabel = new QLabel("Давление: 103000", this);
+    room3TemperatureLabel = new QLabel("Температура: 0", this);
+    room3HumidityLabel = new QLabel("Влажность: 0%", this);
+    room3PressureLabel = new QLabel("Давление: 0", this);
     room3AirflowDirectionLabel = new QLabel("Направление подачи воздуха", this);
 
     room3TemperatureLabel->setMinimumWidth(222);
@@ -189,7 +211,8 @@ void MainWindow::setupUI() {
     roomLayout->addLayout(room3Layout);
 
     roomsWidget->setLayout(roomLayout);
-    mainLayout->addLayout(controlLayout);
+    //mainLayout->addLayout(controlLayout);
+    mainLayout->addWidget(controlsRestrictorWidget);
     mainLayout->addWidget(roomsWidget);
 
     graphicsView = new QGraphicsView(this);
@@ -358,14 +381,22 @@ void MainWindow::updateTemperature(int value) {
     room3TemperatureLabel->setText(QString("Температура: %1").arg(temperature));
 }
 
-/**
- * @brief Изменяет шаг слайдера
- *
- * Смена "чувствительности" слайдера
- * в зависимости от числового значения
- */
-void MainWindow::changeSliderUnit() {
-    updateTemperature(temperatureSlider->value());
+void MainWindow::updateTemperature(int value,int ind) {
+    double temperature = value;
+    if (temperatureUnitCombo->currentIndex() == 1) {
+        // °F
+        temperature = temperature * 9.0 / 5.0 + 32;
+    } else if (temperatureUnitCombo->currentIndex() == 2) {
+        // K
+        temperature = temperature + 273.15;
+    }
+    // Обновление температуры в метках комнат
+    if(ind==1)
+        room1TemperatureLabel->setText(QString("Температура: %1").arg(temperature));
+    else if(ind==2)
+        room2TemperatureLabel->setText(QString("Температура: %1").arg(temperature));
+    else if(ind==3)
+        room3TemperatureLabel->setText(QString("Температура: %1").arg(temperature));
 }
 
 /**
@@ -376,7 +407,7 @@ void MainWindow::changeSliderUnit() {
  * в соответствии с текущим положением слайдера.
  */
 void MainWindow::changeTemperatureUnit(int index) {
-    updateTemperature(temperatureSlider->value());
+    updateTemperature(temperature1_SpinBox->value());
 }
 
 /**

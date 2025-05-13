@@ -5,7 +5,6 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QPushButton>
-#include <QSlider>
 #include <QComboBox>
 #include <QLabel>
 #include <QXmlStreamReader>
@@ -16,6 +15,7 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QFormLayout>
+#include <QSpinBox>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -43,7 +43,10 @@ private:
     QLabel *room3AirflowDirectionLabel;
 
     // Ползунки и выпадающие списки для управления
-    QSlider *temperatureSlider;
+   // QSlider *temperatureSlider;
+    QSpinBox *temperature1_SpinBox;
+    QSpinBox *temperature2_SpinBox;
+    QSpinBox *temperature3_SpinBox;
     QComboBox *temperatureSliderCombo;
     QComboBox *temperatureUnitCombo;
     QComboBox *pressureUnitCombo;
@@ -63,10 +66,10 @@ private:
 private slots:
     void setupUI();
     void toggleSystem();
-    void changeSliderUnit();
     void changeTemperatureUnit(int index);
     void changePressureUnit(int index);
     void updateTemperature(int value);
+    void updateTemperature(int value,int ind);
     void editRoom(int roomIndex);
     void toggleDarkTheme(bool isDark);///< Файл style - настройки альтернативной темы
 
