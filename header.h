@@ -44,6 +44,7 @@ private:
 
     // Ползунки и выпадающие списки для управления
     QSlider *temperatureSlider;
+    QComboBox *temperatureSliderCombo;
     QComboBox *temperatureUnitCombo;
     QComboBox *pressureUnitCombo;
     QPushButton *toggleSystemButton;
@@ -62,6 +63,7 @@ private:
 private slots:
     void setupUI();
     void toggleSystem();
+    void changeSliderUnit();
     void changeTemperatureUnit(int index);
     void changePressureUnit(int index);
     void updateTemperature(int value);
@@ -78,7 +80,7 @@ class RoomEditDialog : public QDialog {
 public:
     explicit RoomEditDialog(int roomIndex,double currentTemperature,double currentHumidity,
                             double currentPressure,const QString &currentAirflowDirection,
-                            QWidget *parent = nullptr): QDialog(parent), roomIndex(roomIndex) {
+                            QWidget *parent = nullptr): QDialog(parent), CurrentRoom_ind(CurrentRoom_ind) {
         setWindowTitle("Редактирование комнаты");
 
         QFormLayout *formLayout = new QFormLayout(this);
@@ -133,8 +135,10 @@ public:
         return airflowDirectionComboBox->currentText();
     }
 
+    int Slider_ind;
+
 private:
-    int roomIndex;  ///< Индекс комнаты
+    int CurrentRoom_ind;  ///< Индекс комнаты
     QLineEdit *temperatureLineEdit;  ///< Поле для ввода температуры
     QLineEdit *humidityLineEdit;     ///< Поле для ввода влажности
     QLineEdit *pressureLineEdit;     ///< Поле для ввода давления

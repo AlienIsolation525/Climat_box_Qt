@@ -77,11 +77,20 @@ void MainWindow::setupUI() {
 
     ///< Вертикальный слайдер для изменения температуры
     temperatureSlider = new QSlider(Qt::Vertical, this);
-    temperatureSlider->setRange(0, 100);
+    temperatureSlider->setRange(0, 120);
     temperatureSlider->setMinimumHeight(200);
     connect(temperatureSlider, &QSlider::valueChanged, this, &MainWindow::updateTemperature);
     controlLayout->addWidget(new QLabel("Температура:"));
     controlLayout->addWidget(temperatureSlider);
+
+    ///< Выпадающий список для изменения шага слайдера
+    temperatureSliderCombo = new QComboBox(this);
+    temperatureSliderCombo->addItems({"10","15","30"});
+    connect(temperatureSliderCombo,
+            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this,
+            &MainWindow::changeSliderUnit);
+    controlLayout->addWidget(temperatureSliderCombo);
 
     ///< Выпадающий список для выбора единицы измерения температуры
     temperatureUnitCombo = new QComboBox(this);
@@ -104,9 +113,10 @@ void MainWindow::setupUI() {
     QWidget *roomsWidget = new QWidget(this);
 
     roomsWidget->setStyleSheet(
+        "selection-color: yellow;"
         "background-color: #f0f0f0; "
         "border: 2px solid #808080; "
-        "border-radius: 10px;"
+        "border-radius: 2;"
         );
 
     QHBoxLayout *roomLayout = new QHBoxLayout(roomsWidget);
@@ -115,13 +125,18 @@ void MainWindow::setupUI() {
     ///< Комната 1
     QVBoxLayout *room1Layout = new QVBoxLayout();
     QPushButton *room1Button = new QPushButton("Комната 1", this);
-    connect(room1Button, &QPushButton::clicked, this, [this]() { editRoom(1); });
+    connect(room1Button, &QPushButton::clicked, this, [this]() {editRoom(1); });
+
     room1TemperatureLabel = new QLabel("Температура: 10", this);
     room1HumidityLabel = new QLabel("Влажность: 10%", this);
     room1PressureLabel = new QLabel("Давление: 100000", this);
-
-    ///< Направление подачи воздуха для комнаты 1
     room1AirflowDirectionLabel = new QLabel("Направление подачи воздуха", this);
+    ///  Выставляем минимальную ширину QLabel для статичного отображения инфо-блоков
+    room1TemperatureLabel->setMinimumWidth(222);
+    room1HumidityLabel->setMinimumWidth(222);
+    room1PressureLabel->setMinimumWidth(222);
+    room1AirflowDirectionLabel->setMinimumWidth(222);
+
     room1Layout->addWidget(room1Button);
     room1Layout->addWidget(room1TemperatureLabel);
     room1Layout->addWidget(room1HumidityLabel);
@@ -134,11 +149,15 @@ void MainWindow::setupUI() {
     QPushButton *room2Button = new QPushButton("Комната 2", this);
     connect(room2Button, &QPushButton::clicked, this, [this]() { editRoom(2); });
     room2TemperatureLabel = new QLabel("Температура: 20", this);
+    room2TemperatureLabel->setObjectName("roomLabel");
     room2HumidityLabel = new QLabel("Влажность: 20%", this);
     room2PressureLabel = new QLabel("Давление: 102000", this);
-
-    ///< Направление подачи воздуха для комнаты 2
     room2AirflowDirectionLabel = new QLabel("Направление подачи воздуха", this);
+
+    room2TemperatureLabel->setMinimumWidth(222);
+    room2HumidityLabel->setMinimumWidth(222);
+    room2PressureLabel->setMinimumWidth(222);
+    room2AirflowDirectionLabel->setMinimumWidth(222);
 
     room2Layout->addWidget(room2Button);
     room2Layout->addWidget(room2TemperatureLabel);
@@ -154,9 +173,13 @@ void MainWindow::setupUI() {
     room3TemperatureLabel = new QLabel("Температура: 30", this);
     room3HumidityLabel = new QLabel("Влажность: 30%", this);
     room3PressureLabel = new QLabel("Давление: 103000", this);
-
-    ///< Направление подачи воздуха для комнаты 3
     room3AirflowDirectionLabel = new QLabel("Направление подачи воздуха", this);
+
+    room3TemperatureLabel->setMinimumWidth(222);
+    room3HumidityLabel->setMinimumWidth(222);
+    room3PressureLabel->setMinimumWidth(222);
+    room3AirflowDirectionLabel->setMinimumWidth(222);
+
 
     room3Layout->addWidget(room3Button);
     room3Layout->addWidget(room3TemperatureLabel);
@@ -287,12 +310,19 @@ void MainWindow::toggleDarkTheme(bool isDark) {
             QLabel {
                 color: #ff69b4;
             }
+            QVBoxLayout {
+                background-color: #000000;
+                color: #ff69b4;
+            }
+            QHBoxLayout {
+                background-color: #000000;
+                color: #ff69b4;
+            }
         )");
     } else {
         qApp->setStyleSheet("");
     }
 }
-
 
 /**
  * @brief Переключает состояние системы.
@@ -326,6 +356,16 @@ void MainWindow::updateTemperature(int value) {
     room1TemperatureLabel->setText(QString("Температура: %1").arg(temperature));
     room2TemperatureLabel->setText(QString("Температура: %1").arg(temperature));
     room3TemperatureLabel->setText(QString("Температура: %1").arg(temperature));
+}
+
+/**
+ * @brief Изменяет шаг слайдера
+ *
+ * Смена "чувствительности" слайдера
+ * в зависимости от числового значения
+ */
+void MainWindow::changeSliderUnit() {
+    updateTemperature(temperatureSlider->value());
 }
 
 /**
